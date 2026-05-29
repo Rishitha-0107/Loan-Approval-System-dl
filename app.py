@@ -1,12 +1,22 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
+import numpy as np
 import joblib
 import gdown
 import os
 
 # =========================================
-# DOWNLOAD MODEL FROM GOOGLE DRIVE
+# PAGE CONFIG
+# =========================================
+
+st.set_page_config(
+    page_title="Loan Approval Prediction",
+    page_icon="🏦",
+    layout="wide"
+)
+
+# =========================================
+# GOOGLE DRIVE MODEL DOWNLOAD
 # =========================================
 
 FILE_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
@@ -24,20 +34,14 @@ if not os.path.exists(MODEL_PATH):
     )
 
 # =========================================
-# LOAD MODEL
+# LOAD FILES
 # =========================================
 
 model = joblib.load(MODEL_PATH)
 
-# =========================================
-# PAGE CONFIG
-# =========================================
+features = joblib.load("features.pkl")
 
-st.set_page_config(
-    page_title="Loan Approval Prediction",
-    page_icon="🏦",
-    layout="wide"
-)
+encoders = joblib.load("encoders.pkl")
 
 # =========================================
 # TITLE
@@ -46,7 +50,7 @@ st.set_page_config(
 st.title("🏦 Loan Approval Prediction System")
 
 st.markdown(
-    "### AI-Powered Banking Risk Assessment"
+    "### AI-Powered Banking Risk Assessment Dashboard"
 )
 
 st.divider()
@@ -55,20 +59,22 @@ st.divider()
 # INPUT SECTION
 # =========================================
 
-st.sidebar.header("Customer Details")
+st.sidebar.header("Enter Customer Details")
 
-feature_count = model.n_features_in_
+input_data = {}
 
-input_values = []
+for feature in features:
 
-for i in range(feature_count):
-
-    value = st.sidebar.number_input(
-        f"Feature {i+1}",
+    input_data[feature] = st.sidebar.number_input(
+        feature,
         value=0.0
     )
 
-    input_values.append(value)
+# =========================================
+# CREATE DATAFRAME
+# =========================================
+
+input_df = pd.DataFrame([input_data])
 
 # =========================================
 # PREDICTION
@@ -76,9 +82,7 @@ for i in range(feature_count):
 
 if st.button("🔍 Predict Loan Status"):
 
-    input_array = np.array([input_values])
-
-    prediction = model.predict(input_array)[0]
+    prediction = model.predict(input_df)[0]
 
     st.subheader("Prediction Result")
 
