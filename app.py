@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -97,4 +97,4 @@ if st.button("🔍 Predict Loan Status"):
 
 st.markdown("---")
 st.markdown("Built with ❤️ using Streamlit & Machine Learning")
-```
+
