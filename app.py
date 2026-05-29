@@ -1,32 +1,45 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
 import joblib
 import os
 import gdown
 
 # =========================================
-# DOWNLOAD MODEL FROM GOOGLE DRIVE
+# GOOGLE DRIVE FILE IDS
 # =========================================
 
-FILE_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
-MODEL_PATH = "model.pkl"
+MODEL_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
 
-# Download model if not already downloaded
+# =========================================
+# FILE PATHS
+# =========================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.path.join(BASE_DIR, "risk_model.pkl")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
+PCA_PATH = os.path.join(BASE_DIR, "pca.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "feature_names.pkl")
+
+# =========================================
+# DOWNLOAD MODEL IF NOT EXISTS
+# =========================================
+
 if not os.path.exists(MODEL_PATH):
 
-    url = f"https://drive.google.com/uc?id={FILE_ID}"
+    url = f"https://drive.google.com/uc?id={MODEL_ID}"
 
-    gdown.download(
-        url,
-        MODEL_PATH,
-        quiet=False
-    )
+    gdown.download(url, MODEL_PATH, quiet=False)
 
 # =========================================
-# LOAD MODEL
+# LOAD FILES
 # =========================================
 
 model = joblib.load(MODEL_PATH)
+scaler = joblib.load(SCALER_PATH)
+pca = joblib.load(PCA_PATH)
+feature_names = joblib.load(FEATURES_PATH)
 
 # =========================================
 # PAGE CONFIG
@@ -43,10 +56,7 @@ st.set_page_config(
 # =========================================
 
 st.title("🏦 Loan Approval Prediction System")
-
-st.markdown(
-    "### AI-Powered Banking Risk Assessment Dashboard"
-)
+st.markdown("### AI-Powered Banking Risk Assessment")
 
 st.divider()
 
@@ -54,54 +64,22 @@ st.divider()
 # SIDEBAR INPUTS
 # =========================================
 
-st.sidebar.header("Enter Customer Details")
+st.sidebar.header("Customer Details")
 
-Age = st.sidebar.number_input(
-    "Age",
-    min_value=18,
-    max_value=100,
-    value=25
-)
+input_data = {}
 
-Income = st.sidebar.number_input(
-    "Income",
-    min_value=0,
-    max_value=1000000,
-    value=50000
-)
+for feature in feature_names:
 
-LoanAmount = st.sidebar.number_input(
-    "Loan Amount",
-    min_value=0,
-    max_value=1000000,
-    value=100000
-)
-
-CreditScore = st.sidebar.number_input(
-    "Credit Score",
-    min_value=300,
-    max_value=900,
-    value=650
-)
-
-Experience = st.sidebar.number_input(
-    "Years of Experience",
-    min_value=0,
-    max_value=50,
-    value=2
-)
+    input_data[feature] = st.sidebar.number_input(
+        feature,
+        value=0.0
+    )
 
 # =========================================
-# CREATE INPUT ARRAY
+# DATAFRAME
 # =========================================
 
-input_data = np.array([[
-    Age,
-    Income,
-    LoanAmount,
-    CreditScore,
-    Experience
-]])
+input_df = pd.DataFrame([input_data])
 
 # =========================================
 # PREDICTION
@@ -109,7 +87,14 @@ input_data = np.array([[
 
 if st.button("🔍 Predict Loan Status"):
 
-    prediction = model.predict(input_data)[0]
+    # Scaling
+    scaled_data = scaler.transform(input_df)
+
+    # PCA
+    pca_data = pca.transform(scaled_data)
+
+    # Prediction
+    prediction = model.predict(pca_data)[0]
 
     st.subheader("Prediction Result")
 
