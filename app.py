@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -16,7 +17,7 @@ st.set_page_config(
 )
 
 # =========================================
-# GOOGLE DRIVE MODEL DOWNLOAD
+# DOWNLOAD MODEL FROM GOOGLE DRIVE
 # =========================================
 
 FILE_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
@@ -34,14 +35,12 @@ if not os.path.exists(MODEL_PATH):
     )
 
 # =========================================
-# LOAD FILES
+# LOAD MODEL + FEATURES
 # =========================================
 
 model = joblib.load(MODEL_PATH)
 
 features = joblib.load("features.pkl")
-
-encoders = joblib.load("encoders.pkl")
 
 # =========================================
 # TITLE
@@ -56,7 +55,7 @@ st.markdown(
 st.divider()
 
 # =========================================
-# INPUT SECTION
+# SIDEBAR INPUTS
 # =========================================
 
 st.sidebar.header("Enter Customer Details")
@@ -71,7 +70,7 @@ for feature in features:
     )
 
 # =========================================
-# CREATE DATAFRAME
+# DATAFRAME
 # =========================================
 
 input_df = pd.DataFrame([input_data])
@@ -98,3 +97,4 @@ if st.button("🔍 Predict Loan Status"):
 
 st.markdown("---")
 st.markdown("Built with ❤️ using Streamlit & Machine Learning")
+```
