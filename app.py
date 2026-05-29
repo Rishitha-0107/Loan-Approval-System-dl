@@ -6,10 +6,10 @@ import pandas as pd
 # =====================================================
 # LOAD MODEL & SUPPORT FILES
 # =====================================================
-
-model = joblib.load("random_forest.pkl")
-features = joblib.load("features.pkl")
-label_encoders = joblib.load("label_encoders.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model = joblib.load(os.path.join(BASE_DIR, "random_forest.pkl"))
+features = joblib.load(os.path.join(BASE_DIR, "features.pkl"))
+label_encoders = joblib.load(os.path.join(BASE_DIR, "label_encoders.pkl"))
 
 # =====================================================
 # PAGE CONFIG
