@@ -1,45 +1,33 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
+import pandas as pd
 import joblib
-import os
 import gdown
+import os
 
 # =========================================
-# GOOGLE DRIVE FILE IDS
+# DOWNLOAD MODEL FROM GOOGLE DRIVE
 # =========================================
 
-MODEL_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
+FILE_ID = "1TnIcnpvL4jEC7Ocw_Cf3NrIjlWB9lDd-"
 
-# =========================================
-# FILE PATHS
-# =========================================
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-MODEL_PATH = os.path.join(BASE_DIR, "risk_model.pkl")
-SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
-PCA_PATH = os.path.join(BASE_DIR, "pca.pkl")
-FEATURES_PATH = os.path.join(BASE_DIR, "feature_names.pkl")
-
-# =========================================
-# DOWNLOAD MODEL IF NOT EXISTS
-# =========================================
+MODEL_PATH = "model.pkl"
 
 if not os.path.exists(MODEL_PATH):
 
-    url = f"https://drive.google.com/uc?id={MODEL_ID}"
+    url = f"https://drive.google.com/uc?id={FILE_ID}"
 
-    gdown.download(url, MODEL_PATH, quiet=False)
+    gdown.download(
+        url,
+        MODEL_PATH,
+        quiet=False
+    )
 
 # =========================================
-# LOAD FILES
+# LOAD MODEL
 # =========================================
 
 model = joblib.load(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
-pca = joblib.load(PCA_PATH)
-feature_names = joblib.load(FEATURES_PATH)
 
 # =========================================
 # PAGE CONFIG
@@ -56,30 +44,31 @@ st.set_page_config(
 # =========================================
 
 st.title("🏦 Loan Approval Prediction System")
-st.markdown("### AI-Powered Banking Risk Assessment")
+
+st.markdown(
+    "### AI-Powered Banking Risk Assessment"
+)
 
 st.divider()
 
 # =========================================
-# SIDEBAR INPUTS
+# INPUT SECTION
 # =========================================
 
 st.sidebar.header("Customer Details")
 
-input_data = {}
+feature_count = model.n_features_in_
 
-for feature in feature_names:
+input_values = []
 
-    input_data[feature] = st.sidebar.number_input(
-        feature,
+for i in range(feature_count):
+
+    value = st.sidebar.number_input(
+        f"Feature {i+1}",
         value=0.0
     )
 
-# =========================================
-# DATAFRAME
-# =========================================
-
-input_df = pd.DataFrame([input_data])
+    input_values.append(value)
 
 # =========================================
 # PREDICTION
@@ -87,19 +76,15 @@ input_df = pd.DataFrame([input_data])
 
 if st.button("🔍 Predict Loan Status"):
 
-    # Scaling
-    scaled_data = scaler.transform(input_df)
+    input_array = np.array([input_values])
 
-    # PCA
-    pca_data = pca.transform(scaled_data)
-
-    # Prediction
-    prediction = model.predict(pca_data)[0]
+    prediction = model.predict(input_array)[0]
 
     st.subheader("Prediction Result")
 
     if prediction == 1:
         st.success("✅ Loan Approved")
+
     else:
         st.error("❌ Loan Rejected")
 
